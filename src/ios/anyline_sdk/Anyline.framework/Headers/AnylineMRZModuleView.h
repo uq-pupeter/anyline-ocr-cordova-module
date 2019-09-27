@@ -7,8 +7,8 @@
 //
 
 #import "AnylineAbstractModuleView.h"
-#import "ALMRZResult.h"
-#import "ALMRZScanPlugin.h"
+#import "ALIDResult.h"
+#import "ALIDScanViewPlugin.h"
 
 @protocol AnylineMRZModuleDelegate;
 
@@ -20,9 +20,25 @@
  * Communication with the host application is managed with a delegate that conforms to AnylineMRZModuleDelegate. The information that gets read is passed to the delegate with the help of of an ALIdentification object.
  *
  */
+__attribute__((deprecated("As of release 10.1, use an ALScanView, combined with an ALIDScanViewPlugin instead. This class will be removed by November 2019.")))
 @interface AnylineMRZModuleView : AnylineAbstractModuleView
 
-@property (nonatomic, strong) ALMRZScanPlugin *mrzScanPlugin;
+@property (nullable, nonatomic, strong) ALIDScanViewPlugin *mrzScanViewPlugin;
+
+@property (nullable, nonatomic, strong) ALIDScanPlugin *mrzScanPlugin;
+
+/**
+ *  If strictMode is enabled, results will only be returned when all checkDigits are valid.
+ *  Default strictMode = false
+ */
+@property (nonatomic) BOOL strictMode;
+
+/**
+ *  If cropAndTransformID is enabled, the detected identification document will be cropped and the image will be returned.
+ *  Default strictMode = false
+ */
+@property (nonatomic) BOOL cropAndTransformID;
+
 
 /**
  *  Sets the license key and delegate.
@@ -33,12 +49,25 @@
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setupWithLicenseKey:(NSString *)licenseKey
-                   delegate:(id<AnylineMRZModuleDelegate>)delegate
-                      error:(NSError **)error;
+- (BOOL)setupWithLicenseKey:(NSString * _Nonnull)licenseKey
+                   delegate:(id<AnylineMRZModuleDelegate> _Nonnull)delegate
+                      error:(NSError * _Nullable * _Nullable )error;
+
+/**
+ *  Sets the license key and delegate. Async method with return block when done.
+ *
+ *  @param licenseKey The Anyline license key for this application bundle
+ *  @param delegate The delegate that will receive the Anyline results (hast to conform to <AnylineMRZModuleDelegate>)
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
+ *
+ */
+- (void)setupAsyncWithLicenseKey:(NSString * _Nonnull)licenseKey
+                        delegate:(id<AnylineMRZModuleDelegate> _Nonnull)delegate
+                        finished:(void (^_Nonnull)(BOOL success, NSError * _Nullable error))finished;
 
 @end
 
+__attribute__((deprecated("As of release 10.1, use an ALIDPluginDelegate, combined with an ALIDScanPlugin instead. This class will be removed by November 2019.")))
 @protocol AnylineMRZModuleDelegate <NSObject>
 
 @optional
@@ -52,10 +81,10 @@
  *
  *  @deprecated since 3.10
  */
-- (void)anylineMRZModuleView:(AnylineMRZModuleView *)anylineMRZModuleView
-           didFindScanResult:(ALIdentification *)scanResult
+- (void)anylineMRZModuleView:(AnylineMRZModuleView * _Nonnull)anylineMRZModuleView
+           didFindScanResult:(ALIdentification * _Nonnull)scanResult
          allCheckDigitsValid:(BOOL)allCheckDigitsValid
-                     atImage:(UIImage *)image __deprecated_msg("Deprecated since 3.10. Use method anylineMRZModuleView:didFindScanResult:allCheckDigitsValid:atImage: instead.");
+                     atImage:(UIImage * _Nonnull)image __deprecated_msg("Deprecated since 3.10. Use method anylineMRZModuleView:didFindScanResult: instead.");
 
 @required
 
@@ -67,7 +96,7 @@
  *
  *  @since 3.10
  */
-- (void)anylineMRZModuleView:(AnylineMRZModuleView *)anylineMRZModuleView
-               didFindResult:(ALMRZResult *)scanResult;
+- (void)anylineMRZModuleView:(AnylineMRZModuleView * _Nonnull)anylineMRZModuleView
+               didFindResult:(ALMRZResult * _Nonnull)scanResult;
 
 @end

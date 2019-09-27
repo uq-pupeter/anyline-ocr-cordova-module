@@ -9,6 +9,7 @@
 #import "AnylineAbstractModuleView.h"
 #import "ALBarcodeResult.h"
 #import "ALBarcodeScanPlugin.h"
+#import "ALBarcodeScanViewPlugin.h"
 
 @protocol AnylineBarcodeModuleDelegate;
 
@@ -20,9 +21,13 @@
  * AnylineBarcodeModuleView is able to scan the most common 1D and 2D codes. The accepted codes are set with setBarcodeFormatOptions.
  *
  */
+
+__attribute__((deprecated("As of release 10.1, use an ALScanView, combined with an ALBarcodeScanViewPlugin instead. This class will be removed by November 2019.")))
 @interface AnylineBarcodeModuleView : AnylineAbstractModuleView
 
-@property (nonatomic, strong) ALBarcodeScanPlugin *barcodeScanPlugin;
+@property (nullable, nonatomic, strong) ALBarcodeScanPlugin *barcodeScanPlugin;
+
+@property (nullable, nonatomic, strong) ALBarcodeScanViewPlugin *barcodeScanViewPlugin;
 
 /**
  *  Sets the type of code to recognize. Valid values are: kCodeTypeAztec, kCodeTypeCodabar, kCodeTypeCode39, kCodeTypeCode93, kCodeTypeCode128, kCodeTypeDataMatrix, kCodeTypeEAN8, kCodeTypeEAN13, kCodeTypeITF, kCodeTypePDF417, kCodeTypeQR, kCodeTypeRSS14, kCodeTypeRSSExpanded, kCodeTypeUPCA, kCodeTypeUPCE, kCodeTypeUPCEANExtension.
@@ -46,32 +51,26 @@
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setupWithLicenseKey:(NSString *)licenseKey
-                   delegate:(id<AnylineBarcodeModuleDelegate>)delegate
-                      error:(NSError **)error;
+- (BOOL)setupWithLicenseKey:(NSString * _Nonnull)licenseKey
+                   delegate:(id<AnylineBarcodeModuleDelegate> _Nonnull)delegate
+                      error:(NSError * _Nullable * _Nullable )error;
 
+/**
+ *  Sets the license key and delegate. Async method with return block when done.
+ *
+ *  @param licenseKey The Anyline license key for this application bundle
+ *  @param delegate The delegate that will receive the Anyline results (hast to conform to <AnylineBarcodeModuleDelegate>)
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
+ *
+ */
+- (void)setupAsyncWithLicenseKey:(NSString * _Nonnull)licenseKey
+                        delegate:(id<AnylineBarcodeModuleDelegate> _Nonnull)delegate
+                        finished:(void (^_Nonnull)(BOOL success, NSError * _Nullable error))finished;
 
 @end
 
+__attribute__((deprecated("As of release 10.1, use an ALBarcodeScanPluginDelegate, combined with an ALBarcodeScanPluing instead. This class will be removed by November 2019.")))
 @protocol AnylineBarcodeModuleDelegate <NSObject>
-
-@optional
-
-/**
- *  Returns the scanned value
- *
- *  @param anylineBarcodeModuleView The view that scanned the result
- *  @param scanResult The scanned value
- *  @param barcodeFormat The barcode format of the scanned barcode
- *  @param image The image that was used to scan the barcode
- * 
- *  @deprecated since 3.10
- */
-- (void)anylineBarcodeModuleView:(AnylineBarcodeModuleView *)anylineBarcodeModuleView
-               didFindScanResult:(NSString *)scanResult
-               withBarcodeFormat:(ALBarcodeFormat)barcodeFormat
-                         atImage:(UIImage *)image __deprecated_msg("Deprecated since 3.10 Use method anylineBarcodeModuleView:didFindScanResult:withBarcodeFormat:atImage: instead.");
-
 
 @required
 /**
@@ -82,7 +81,7 @@
  *
  *  @since 3.10
  */
-- (void)anylineBarcodeModuleView:(AnylineBarcodeModuleView *)anylineBarcodeModuleView
-                   didFindResult:(ALBarcodeResult *)scanResult;
+- (void)anylineBarcodeModuleView:(AnylineBarcodeModuleView * _Nonnull)anylineBarcodeModuleView
+                   didFindResult:(ALBarcodeResult * _Nonnull)scanResult;
 
 @end

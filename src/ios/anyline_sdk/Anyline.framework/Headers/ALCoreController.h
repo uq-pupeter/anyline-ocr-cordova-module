@@ -30,12 +30,14 @@
 
 @property (nonatomic, assign, getter=isRunning) BOOL running;
 
+@property (nonatomic, assign, getter=isSingleRun) BOOL singleRun;
+
 /**
  *  The delegate property.
  *  You must set the delegate if you want to get any results out 
  *  of the Anyline SDK.
  */
-@property (nonatomic, weak) id<ALCoreControllerDelegate> delegate;
+@property (nonatomic, weak) id<ALCoreControllerDelegate> _Nullable delegate;
 
 /**
  *  Initializes a new AnylineController with a license key. In order to 
@@ -46,7 +48,7 @@
  *
  *  @return A new instance of AnylineController.
  */
-- (instancetype)initWithLicenseKey:(NSString *)licenseKey;
+- (instancetype _Nullable)initWithLicenseKey:(NSString *_Nonnull)licenseKey;
 
 /**
  *  Initializes a new AnylineController with a license key and delegate. In order 
@@ -57,21 +59,32 @@
  *
  *  @return A new instance of AnylineController.
  */
-- (instancetype)initWithLicenseKey:(NSString *)licenseKey
-                          delegate:(id<ALCoreControllerDelegate>)delegate;
+- (instancetype _Nullable)initWithLicenseKey:(NSString *_Nonnull)licenseKey
+                                    delegate:(id<ALCoreControllerDelegate> _Nullable)delegate;
 
 /**
  *  This method loads the Anyline SDK with an configuration string.
  *
  *  @param script     The string which represents the configuration.
  *  @param bundlePath The bundlePath where the additional ressources are located.
- *  @param error      The error if the script loading fails.
- *
- *  @return Boolean indicating the success / failure of the loading.
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
  */
-- (BOOL)loadScript:(NSString *)script
-        bundlePath:(NSString *)bundlePath
-             error:(NSError **)error;
+- (BOOL)loadScript:(NSString *_Nonnull)script
+        bundlePath:(NSString *_Nonnull)bundlePath
+             error:(NSError *_Nullable *_Nullable)error;
+
+/**
+ *  This method loads the Anyline SDK with an configuration string.
+ *
+ *  @param script     The string which represents the configuration.
+ *  @param scriptName The filename of the script.
+ *  @param bundlePath The bundlePath where the additional ressources are located.
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
+ */
+- (BOOL)loadScript:(NSString *_Nonnull)script
+        scriptName:(NSString *_Nonnull)scriptName
+        bundlePath:(NSString *_Nonnull)bundlePath
+             error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  This method loads the Anyline SDK with an configuration file which is located 
@@ -82,13 +95,11 @@
  *                     the bundlePath
  *  @param bundlePath  The bundlePath where the configuration and the additional 
  *                     ressources are located.
- *  @param error       The error if the script loading fails.
- *
- *  @return Boolean indicating the success / failure of the loading.
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
  */
-- (BOOL)loadCmdFile:(NSString *)cmdFileName
-         bundlePath:(NSString *)bundlePath
-              error:(NSError **)error;
+- (BOOL)loadCmdFile:(NSString *_Nonnull)cmdFileName
+         bundlePath:(NSString *_Nonnull)bundlePath
+              error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Starts a continious image processing workflow where the images are provided from the 
@@ -100,7 +111,7 @@
  *
  *  @return Boolean indicating the success / failure of the start process.
  */
-- (BOOL)startWithImageProvider:(id<ALImageProvider>)imageProvider error:(NSError **)error;
+- (BOOL)startWithImageProvider:(id<ALImageProvider> _Nonnull)imageProvider error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Starts a continious image processing workflow where the images are provided from the
@@ -114,9 +125,9 @@
  *
  *  @return Boolean indicating the success / failure of the start process.
  */
-- (BOOL)startWithImageProvider:(id<ALImageProvider>)imageProvider
-                startVariables:(NSDictionary *)variables
-                         error:(NSError **)error;
+- (BOOL)startWithImageProvider:(id<ALImageProvider> _Nonnull)imageProvider
+                startVariables:(NSDictionary *_Nullable)variables
+                         error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Stops a previously started image processing workflow. Should be called ex. in viewDidDisappear:
@@ -126,7 +137,7 @@
  *
  *  @return Boolean indicating the success / failure of the stop.
  */
-- (BOOL)stopAndReturnError:(NSError **)error;
+- (BOOL)stopAndReturnError:(NSError *_Nullable *_Nullable)error;
 
 
 /**
@@ -138,7 +149,7 @@
  *
  *  @return BOOL indicating if the processing could be started.
  */
-- (BOOL)processImage:(UIImage *)image error:(NSError **)error;
+- (BOOL)processImage:(UIImage *_Nonnull)image error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Starts a single image run with an UIImage and a start variable dictionary.
@@ -151,9 +162,9 @@
  *
  *  @return BOOL indicating if the processing could be started.
  */
-- (BOOL)processImage:(UIImage *)image
-      startVariables:(NSDictionary *)variables
-               error:(NSError **)error;
+- (BOOL)processImage:(UIImage *_Nonnull)image
+      startVariables:(NSDictionary *_Nullable)variables
+               error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Starts a single image run with an ALImage.
@@ -164,7 +175,7 @@
  *
  *  @return BOOL indicating if the processing could be started.
  */
-- (BOOL)processALImage:(ALImage*)alImage error:(NSError **)error;
+- (BOOL)processALImage:(ALImage *_Nonnull)alImage error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Starts a single image run with an ALImage and a start variable dictionary.
@@ -177,9 +188,9 @@
  *
  *  @return BOOL indicating if the processing could be started.
  */
-- (BOOL)processALImage:(ALImage*)alImage
-        startVariables:(NSDictionary *)variables
-                 error:(NSError **)error;
+- (BOOL)processALImage:(ALImage *_Nonnull)alImage
+        startVariables:(NSDictionary *_Nullable)variables
+                 error:(NSError *_Nullable *_Nullable)error;
 
 /**
  *  Sets a parameter with a key in the Interpreter.
@@ -187,7 +198,7 @@
  *  @param parameter Parameter to set.
  *  @param key       The key for the parameter.
  */
-- (void)setParameter:(id)parameter forKey:(NSString *)key;
+- (void)setParameter:(id _Nonnull )parameter forKey:(NSString *_Nonnull)key;
 
 /**
  *  The Version number of the current Anyline framework.
@@ -197,7 +208,7 @@
  *
  *  @return The Version number as String
  */
-+ (NSString *)versionNumber;
++ (NSString *_Nonnull)versionNumber;
 
 /**
  *  The Build number of the current Anyline framework.
@@ -207,9 +218,20 @@
  *
  *  @return The Build number as String
  */
-+ (NSString *)buildNumber;
++ (NSString *_Nonnull)buildNumber;
 
-+ (NSBundle *)frameworkBundle;
+
+/**
+ *  Expiration Date of a License Key.
+ *
+ *  @param licenseKey A NSString containing the licenseKey
+ *  @param error will contain an exception if the validation of the licenseKey fails
+ *
+ *  @return license expiration Date as NSString
+ */
++ (NSString *_Nullable)licenseExpirationDateForLicense:(NSString *_Nullable)licenseKey error:(NSError *_Nullable *_Nullable)error;
+
++ (NSBundle *_Nonnull)frameworkBundle;
 
 /**
  * Reporting ON Switch, off by default
@@ -217,11 +239,11 @@
  * @param enable if YES, anyline will report for QA failed scan tries. Use reportImageForLog in ALC file, 
  *               and use the reportScanResultState: for reporting
  */
--(void) enableReporting:(BOOL) enable;
+- (void) enableReporting:(BOOL) enable;
 
-- (void)reportIncludeValues:(NSString *)values;
+- (void)reportIncludeValues:(NSString *_Nonnull)values;
 
-- (NSArray*)runStatistics;
+- (NSArray *_Nonnull)runStatistics;
 
 @end
 
@@ -242,7 +264,7 @@
  *  @param object The result object of the processing.
  *                The result is specified with the RETURN statement in the .alc file.
  */
-- (void)anylineCoreController:(ALCoreController *)coreController didFinishWithOutput:(id)object;
+- (void)anylineCoreController:(ALCoreController *_Nonnull)coreController didFinishWithOutput:(id _Nonnull)object;
 
 @optional
 
@@ -252,7 +274,7 @@
  *
  *  @param error A NSError object with ALErrorDomain and an appropriate status.
  */
-- (void)anylineCoreController:(ALCoreController *)coreController didAbortRun:(NSError *)reason;
+- (void)anylineCoreController:(ALCoreController *_Nonnull)coreController didAbortRun:(NSError * _Nonnull)reason;
 
 /**
  *  Tells the delegate a specified intermediate result. Which intermediate results are reported
@@ -264,9 +286,9 @@
  *  @param variableName The variable name in the .alc file which should be reported.
  *  @param value        The value of the reported variable.
  */
-- (void)anylineCoreController:(ALCoreController *)coreController
-              reportsVariable:(NSString *)variableName
-                        value:(id)value;
+- (void)anylineCoreController:(ALCoreController *_Nonnull)coreController
+              reportsVariable:(NSString *_Nonnull)variableName
+                        value:(id _Nonnull)value;
 
 /**
  *  Tells the delegate that there was a parsing error.
@@ -275,6 +297,6 @@
  *
  *  @param error The parsing error which occured.
  */
-- (void)anylineCoreController:(ALCoreController *)coreController parserError:(NSError *)error;
+- (void)anylineCoreController:(ALCoreController *_Nonnull)coreController parserError:(NSError *_Nonnull)error;
 
 @end

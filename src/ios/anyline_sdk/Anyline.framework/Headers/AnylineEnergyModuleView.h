@@ -10,6 +10,7 @@
 #import "ALMeterResult.h"
 #import "ALMeterScanPlugin.h"
 #import "ALBarcodeScanPlugin.h"
+#import "ALMeterScanViewPlugin.h"
 
 @protocol AnylineEnergyModuleDelegate;
 
@@ -20,11 +21,14 @@
  *
  * AnylineEnergyModuleView is able to scan the most common energy meters. The scan mode is set with setScanMode.
  */
+__attribute__((deprecated("As of release 10.1, use an ALScanView, combined with an ALMeterScanViewPluing instead. This class will be removed by November 2019.")))
 @interface AnylineEnergyModuleView : AnylineAbstractModuleView
 
-@property (nonatomic, strong) ALMeterScanPlugin *meterScanPlugin;
+@property (nullable, nonatomic, strong) ALMeterScanViewPlugin *meterScanViewPlugin;
 
-@property (nonatomic, strong) ALBarcodeScanPlugin *barcodeScanPlugin;
+@property (nullable, nonatomic, strong) ALMeterScanPlugin *meterScanPlugin;
+
+@property (nullable, nonatomic, strong) ALBarcodeScanPlugin *barcodeScanPlugin;
 
 /**
  *  Sets the scan mode. 
@@ -32,15 +36,21 @@
  *
  */
 @property (nonatomic, assign, readonly) ALScanMode scanMode;
-
 /**
- *  Sets the scan mode.
- *
- *  @param scanMode The scan mode to set.
- *
- *  @deprecated since 3.4
+ *  A validation regex string for the Serial scanMode.
+ *  Regex has to follow the ECMAScript standard.
+ *  This parameter will be ignored in the other scanModes.
+ *  If you want to have no regex this property has to be set to nil.
  */
-- (void)setScanMode:(ALScanMode)scanMode __deprecated_msg("Deprecated since 3.4. Use method setScanMode:error: instead.");
+@property (nonatomic, strong) NSString * _Nullable serialNumberValidationRegex;
+/**
+ *  A character whitelist for the Serial scanMode.
+ *  This parameter will be ignored in the other scanModes.
+ *  If you want to have no regex this property has to be set to nil.
+ *
+ *  @warning There are only numbers and uppercase characters allowed.
+ */
+@property (nonatomic, strong) NSString * _Nullable serialNumberCharWhitelist;
 
 /**
  *  Sets the scan mode and returns an NSError if something failed.
@@ -50,7 +60,7 @@
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setScanMode:(ALScanMode)scanMode error:(NSError **)error;
+- (BOOL)setScanMode:(ALScanMode)scanMode error:(NSError * _Nullable * _Nullable)error;
 
 /**
  *  Sets the license key and delegate.
@@ -61,12 +71,25 @@
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setupWithLicenseKey:(NSString *)licenseKey
-                   delegate:(id<AnylineEnergyModuleDelegate>)delegate
-                      error:(NSError **)error;
+- (BOOL)setupWithLicenseKey:(NSString * _Nonnull)licenseKey
+                   delegate:(id<AnylineEnergyModuleDelegate> _Nonnull)delegate
+                      error:(NSError * _Nullable * _Nullable )error;
+
+/**
+ *  Sets the license key and delegate. Async method with return block when done.
+ *
+ *  @param licenseKey The Anyline license key for this application bundle
+ *  @param delegate The delegate that will receive the Anyline results (hast to conform to <AnylineEnergyModuleDelegate>)
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
+ *
+ */
+- (void)setupAsyncWithLicenseKey:(NSString * _Nonnull)licenseKey
+                        delegate:(id<AnylineEnergyModuleDelegate> _Nonnull)delegate
+                        finished:(void (^_Nonnull)(BOOL success, NSError * _Nullable error))finished;
 
 @end
 
+__attribute__((deprecated("As of release 10.1, use an ALMeterScanPluginDelegate, combined with an ALMeterScanPlugin instead. This class will be removed by November 2019.")))
 @protocol AnylineEnergyModuleDelegate <NSObject>
 
 @required
@@ -78,8 +101,8 @@
  *
  *  @since 3.10
  */
-- (void)anylineEnergyModuleView:(AnylineEnergyModuleView *)anylineEnergyModuleView
-                  didFindResult:(ALEnergyResult *)scanResult;
+- (void)anylineEnergyModuleView:(AnylineEnergyModuleView * _Nonnull)anylineEnergyModuleView
+                  didFindResult:(ALEnergyResult * _Nonnull)scanResult;
 @optional
 /**
  *  Returns the scanned value
@@ -92,10 +115,10 @@
  *
  *  @deprecated since 3.10
  */
-- (void)anylineEnergyModuleView:(AnylineEnergyModuleView *)anylineEnergyModuleView
-              didFindScanResult:(NSString *)scanResult
-                      cropImage:(UIImage *)image
-                      fullImage:(UIImage *)fullImage
+- (void)anylineEnergyModuleView:(AnylineEnergyModuleView * _Nonnull)anylineEnergyModuleView
+              didFindScanResult:(NSString * _Nonnull)scanResult
+                      cropImage:(UIImage * _Nonnull)image
+                      fullImage:(UIImage * _Nonnull)fullImage
                          inMode:(ALScanMode)scanMode __deprecated_msg("Deprecated since 3.10 Use AnylineDebugDelegate instead.");
 
 @end

@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 
 // Anyline UIViews
-#import "AnylineVideoView.h"
 #import "ALCutoutView.h"
 #import "ALFlashButton.h"
 
@@ -36,6 +35,7 @@
 #import "ALSegmentResult.h"
 #import "ALDigitResult.h"
 #import "ALDisplayResult.h"
+#import "ALScanResultState.h"
 
 #import "ALValuesStack.h"
 #import "ALValuesStackFlipping.h"
@@ -52,6 +52,26 @@
 #import "AnylineEnergyModuleView.h"
 #import "AnylineBarcodeModuleView.h"
 #import "AnylineMRZModuleView.h"
-//#import "AnylineDebitcardModuleView.h"
 #import "AnylineOCRModuleView.h"
 #import "AnylineDocumentModuleView.h"
+#import "AnylineLicensePlateModuleView.h"
+
+//Scan Plugins
+#import "ALMeterScanPlugin.h"
+#import "ALLicensePlateScanPlugin.h"
+#import "ALDocumentScanPlugin.h"
+#import "ALOCRScanPlugin.h"
+#import "ALIDScanPlugin.h"
+#import "ALBarcodeScanPlugin.h"
+
+//Scan View Plugins
+#import "ALMeterScanViewPlugin.h"
+#import "ALLicensePlateScanViewPlugin.h"
+#import "ALDocumentScanViewPlugin.h"
+#import "ALOCRScanViewPlugin.h"
+#import "ALIDScanViewPlugin.h"
+#import "ALBarcodeScanViewPlugin.h"
+
+
+//ScanViewPluginComposites
+#import "ALAbstractScanViewPluginComposite.h"

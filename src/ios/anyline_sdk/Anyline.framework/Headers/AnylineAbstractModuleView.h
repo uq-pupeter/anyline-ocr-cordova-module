@@ -8,15 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import "ALFlashButton.h"
+#import "ALTorchManager.h"
 #import "ALUIConfiguration.h"
-#import "AnylineVideoView.h"
 #import "ALCoreController.h"
 #import "ALMotionDetector.h"
 
-#import "AnylineVideoView.h"
 #import "ALScanResult.h"
 #import "ALScanInfo.h"
 #import "ALRunSkippedReason.h"
+
+#import "ALScanView.h"
+#import "ALCutoutView.h"
 
 @protocol AnylineDebugDelegate;
 
@@ -31,19 +33,28 @@
  * Overwrite reportScanResultState: to check the various scanning states
  *
  */
+__attribute__((deprecated("As of release 10.1, use an ALAbstractViewPlugin instead. This class will be removed by November 2019.")))
 @interface AnylineAbstractModuleView : UIView
 
-@property (nonatomic, weak) id<AnylineDebugDelegate> debugDelegate;
+@property (nullable, nonatomic, weak) id<AnylineDebugDelegate> debugDelegate;
 
 /**
  The video view which is responsible for video preview, frame extraction, ...
  */
-@property (nonatomic, strong) AnylineVideoView *videoView;
+@property (nullable, nonatomic, strong) ALScanView *cameraView;
+
+@property (nullable, nonatomic, strong, readonly) ALCaptureDeviceManager *captureDeviceManager;
+
+@property (nullable, nonatomic, strong) ALCutoutView *cutoutView;
+
+@property (nullable, nonatomic, strong) ALFlashButton *flashButton;
+
+@property (nullable, nonatomic, strong) ALTorchManager *torchManager;
 
 /**
  * The UI Configuration for the scanning UI
  */
-@property (nonatomic, strong) ALUIConfiguration *currentConfiguration;
+@property (nullable, nonatomic, copy) ALUIConfiguration *currentConfiguration;
 
 
 /**
@@ -54,7 +65,7 @@
 /**
  *  Sets the color of the views border
  */
-@property (nonatomic, strong) IBInspectable UIColor *strokeColor;
+@property (nullable, nonatomic, strong) IBInspectable UIColor *strokeColor;
 
 /**
  *  Sets the corner radius of the views border
@@ -64,7 +75,7 @@
 /**
  *  Sets the color of the space surrounding the view
  */
-@property (nonatomic, strong) IBInspectable UIColor *outerColor;
+@property (nullable, nonatomic, strong) IBInspectable UIColor *outerColor;
 
 /**
  *  Sets the alpha of the space surrounding the view
@@ -74,7 +85,7 @@
 /**
  *  Sets image the user uses to toggle the flash
  */
-@property (nonatomic, strong) IBInspectable UIImage *flashImage;
+@property (nullable, nonatomic, strong) IBInspectable UIImage *flashImage;
 
 /**
  *  Sets the alignment of the flash button. Possible values are:
@@ -135,7 +146,7 @@
  *
  *  @return Boolean indicating if the scanning could be started
  */
-- (BOOL)startScanningAndReturnError:(NSError **)error;
+- (BOOL)startScanningAndReturnError:(NSError * _Nullable * _Nullable )error;
 
 /**
  *  Stops the scanning process or sets the error object
@@ -144,7 +155,7 @@
  *
  *  @return Boolean indicating if the scanning could be stopped
  */
-- (BOOL)cancelScanningAndReturnError:(NSError **)error;
+- (BOOL)cancelScanningAndReturnError:(NSError * _Nullable * _Nullable )error;
 
 /**
  * Reporting ON Switch, off by default
@@ -163,11 +174,13 @@
  * Stop listening for device motion.
  */
 - (void)stopListeningForMotion;
+
 @end
 
 /**
  *  The delegate for the AnylineOCRModuleView.
  */
+__attribute__((deprecated("As of release 10.1, use an ALInfoDelegate with an ALAbstractScanPlugin instead. This class will be removed by November 2019.")))
 @protocol AnylineDebugDelegate <NSObject>
 
 @optional
@@ -186,9 +199,9 @@
  *  @param variableName         The variable name of the reported value
  *  @param value                The reported value
  */
-- (void)anylineModuleView:(AnylineAbstractModuleView *)anylineModuleView
-      reportDebugVariable:(NSString *)variableName
-                    value:(id)value;
+- (void)anylineModuleView:(AnylineAbstractModuleView * _Nonnull)anylineModuleView
+      reportDebugVariable:(NSString * _Nonnull)variableName
+                    value:(id _Nonnull)value;
 /**
  *  Is called when the processing is aborted for the current image before reaching return.
  *  (If not text is found or confidence is to low, etc.)
@@ -196,7 +209,7 @@
  *  @param anylineModuleView The AnylineAbstractModuleView
  *  @param runFailure        The reason why the run failed
  */
-- (void)anylineModuleView:(AnylineAbstractModuleView *)anylineModuleView
+- (void)anylineModuleView:(AnylineAbstractModuleView * _Nonnull)anylineModuleView
                runSkipped:(ALRunFailure)runFailure;
 
 @end

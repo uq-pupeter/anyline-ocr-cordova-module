@@ -41,12 +41,15 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
 @protocol ALDocumentInfoDelegate;
 
 /**
- * The AnylineDocumentModuleView class declares the programmatic interface for an object that manages easy access to Anylines document detection. All its capabilities are bundled into this AnylineAbstractModuleView subclass. Management of the scanning process happens within the view object. It is configurable via interface builder.
+ * The ALDocumentScanPlugin class declares the programmatic interface for an object that manages easy access to Anylines document detection. All its capabilities are bundled into this AnylineAbstractModuleView subclass. Management of the scanning process happens within the view object. It is configurable via interface builder.
  *
- * Communication with the host application is managed with a delegate that conforms to AnylineDocumentModuleDelegate.
+ * Communication with the host application is managed with a delegate that conforms to ALDocumentScanPluginDelegate.
  *
  */
 @interface ALDocumentScanPlugin : NSObject
+
+@property (nonatomic, strong, readonly) NSHashTable<ALDocumentScanPluginDelegate> * _Nullable delegates;
+@property (nonatomic, strong, readonly) NSHashTable<ALDocumentInfoDelegate> * _Nullable infoDelegates;
 
 @property (nullable, nonatomic, strong, readonly) NSString *pluginID;
 
@@ -56,9 +59,23 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
 
 @property (nullable, nonatomic, assign) id<ALImageProvider> imageProvider;
 
-@property (nonatomic, assign) BOOL justDetectCornersIfPossible;
+@property (atomic, assign) BOOL justDetectCornersIfPossible;
+/**
+ Constructor for the DocumentScanPlugin
+ 
+ @param pluginID An unique pluginID
+ @param licenseKey The Anyline license key
+ @param delegate The delegate which receives the results
+ @param error The Error object if something fails
+ 
+ @return Boolean indicating the success / failure of the call.
+ */
+- (instancetype _Nullable)initWithPluginID:(NSString * _Nullable)pluginID
+                                licenseKey:(NSString * _Nonnull)licenseKey
+                                  delegate:(id<ALDocumentScanPluginDelegate> _Nonnull)delegate
+                                     error:(NSError *_Nullable *_Nullable)error NS_DESIGNATED_INITIALIZER;
 
-- (instancetype _Nullable)initWithPluginID:(NSString * _Nullable)pluginID NS_DESIGNATED_INITIALIZER;
+- (instancetype _Nullable)init NS_UNAVAILABLE;
 
 - (BOOL)start:(id<ALImageProvider> _Nonnull)imageProvider error:(NSError * _Nullable * _Nullable)error;
 
@@ -71,17 +88,34 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
 - (BOOL)triggerPictureCornerDetectionAndReturnError:(NSError * _Nullable * _Nullable)error;
 
 /**
- *  Sets the license key and delegate.
+ *  Crops an arbitrary rectangle (e.g. trapezoid) of the input image and perspectively transforms it to a rectangle (e.g. square).
+ *  After the transformation is complete the result delegate anylineDocumentScanPlugin:hasResult:fullImage:documentCorners will be triggered.
+ *  In any case call [ALDocumentScanPlugin cancelScanningAndReturnError:] before using this method.
  *
- *  @param licenseKey The Anyline license key for this application bundle
- *  @param delegate The delegate that will receive the Anyline results (hast to conform to <AnylineDocumentModuleDelegate>)
+ *  @param square The input image will be transformed to this square
+ *  @param image The UIImage which will be processed and transformed
  *  @param error The error that occured
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setupWithLicenseKey:(NSString * _Nonnull)licenseKey
-                   delegate:(id<ALDocumentScanPluginDelegate> _Nonnull)delegate
-                      error:(NSError * _Nullable * _Nullable)error;
+- (BOOL)transformImageWithSquare:(ALSquare * _Nullable)square
+                           image:(UIImage * _Nullable)image
+                           error:(NSError * _Nullable * _Nullable)error;
+
+/**
+ *  Crops an arbitrary rectangle (e.g. trapezoid) of the input image and perspectively transforms it to a rectangle (e.g. square).
+ *  After the transformation is complete the result delegate anylineDocumentScanPlugin:hasResult:fullImage:documentCorners will be triggered.
+ *  In any case call [ALDocumentScanPlugin cancelScanningAndReturnError:] before using this method.
+ *
+ *  @param square The input image will be transformed to this square
+ *  @param image The ALImage which will be processed and transformed
+ *  @param error The error that occured
+ *
+ *  @return Boolean indicating the success / failure of the call.
+ */
+- (BOOL)transformALImageWithSquare:(ALSquare * _Nullable)square
+                             image:(ALImage * _Nullable)image
+                             error:(NSError * _Nullable * _Nullable)error;
 
 /**
  * Maximum deviation for the ratio. 0.15 is the default
@@ -90,6 +124,15 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
  * @since 3.8
  */
 @property (nonnull, nonatomic, strong) NSNumber *maxDocumentRatioDeviation;
+
+
+/**
+ * Maximum resolution of the output image
+ * @warning Parameter can only be changed when the scanning is not running.
+ *
+ * @since 3.19
+ */
+@property (nonatomic, assign) CGSize maxOutputResolution;
 
 /**
  * Sets custom document ratios (NSNumbers) that should be supported (or null to set back to all supported types).
@@ -101,6 +144,8 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
  */
 @property (nullable, nonatomic, strong) NSArray<NSNumber*> * documentRatios;
 
+@property (nonatomic, assign) BOOL postProcessingEnabled;
+
 - (void)addDelegate:(id<ALDocumentScanPluginDelegate> _Nonnull)delegate;
 
 - (void)removeDelegate:(id<ALDocumentScanPluginDelegate> _Nonnull)delegate;
@@ -108,6 +153,17 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
 - (void)addInfoDelegate:(id<ALDocumentInfoDelegate> _Nonnull)infoDelegate;
 
 - (void)removeInfoDelegate:(id<ALDocumentInfoDelegate> _Nonnull)infoDelegate;
+
+//Scan Delay Properties and Methods
+@property (nonatomic) CGFloat delayStartScanTime; //in milliseconds
+
+/**
+ *  The delayedScanTimeFulfilled indicates if the configured delayStartScanTime has been fulfilled.
+ *  No result will be returned unless this method returns true.
+ *
+ *  @return Boolean indicating if the delayStartScanTime has been fulfilled.
+ */
+- (BOOL)delayedScanTimeFulfilled;
 
 @end
 
@@ -180,6 +236,15 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
   reportsPictureProcessingFailure:(ALDocumentError)error;
 
 /**
+ * Called after a picture was successfully taken from the camera.
+ *
+ * The taken picture will be processed after this method call.
+ *
+ * @since 10
+ */
+- (void)anylineDocumentScanPluginTakePictureSuccess:(ALDocumentScanPlugin * _Nonnull)anylineDocumentScanPlugin;
+
+/**
  * <p>Called with interesting values, that arise during processing.</p>
  * <p>
  * Some possibly reported values:
@@ -195,7 +260,6 @@ extern CGFloat const ALDocumentRatioLetterPortrait;
  */
 - (void)anylineDocumentScanPlugin:(ALDocumentScanPlugin * _Nonnull)anylineDocumentScanPlugin
                        reportInfo:(ALScanInfo * _Nonnull)scanInfo;
-
 
 @end
 

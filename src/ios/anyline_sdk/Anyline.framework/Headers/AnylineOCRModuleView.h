@@ -10,6 +10,7 @@
 #import "ALOCRResult.h"
 #import "ALOCRConfig.h"
 #import "ALOCRScanPlugin.h"
+#import "ALOCRScanViewPlugin.h"
 
 /**
  *  The possible run error codes for this module. 
@@ -51,16 +52,19 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @since 3.4
  */
+__attribute__((deprecated("As of release 10.1, use an ALScanView, combined with an ALOCRScanViewPlugin instead. This class will be removed by November 2019.")))
 @interface AnylineOCRModuleView : AnylineAbstractModuleView
 
-@property (nonatomic, strong) ALOCRScanPlugin *ocrScanPlugin;
+@property (nullable, nonatomic, strong) ALOCRScanViewPlugin *ocrScanViewPlugin;
+
+@property (nullable, nonatomic, strong) ALOCRScanPlugin *ocrScanPlugin;
 
 /**
  *  Read-only property for the ALOCRConfig
  *
  *  Use method setOCRConfig:error: for setting the config.
  */
-@property (nonatomic, strong, readonly) ALOCRConfig *ocrConfig;
+@property (nullable, nonatomic, strong, readonly) ALOCRConfig *ocrConfig;
 
 /**
  *  Sets the license key and delegate.
@@ -72,10 +76,25 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setupWithLicenseKey:(NSString *)licenseKey
-                   delegate:(id<AnylineOCRModuleDelegate>)delegate
-                  ocrConfig:(ALOCRConfig *)ocrConfig
-                      error:(NSError **)error;
+- (BOOL)setupWithLicenseKey:(NSString * _Nonnull)licenseKey
+                   delegate:(id<AnylineOCRModuleDelegate> _Nonnull)delegate
+                  ocrConfig:(ALOCRConfig * _Nonnull)ocrConfig
+                      error:(NSError * _Nullable * _Nullable )error;
+
+/**
+ *  Sets the license key and delegate. Async method with return block when done.
+ *
+ *  @param licenseKey The Anyline license key for this application bundle
+ *  @param delegate The delegate that will receive the Anyline results (hast to conform to <AnylineOCRModuleDelegate>)
+ *  @param ocrConfig    The ocrConfig to use for the scanning
+ *  @param finished Inidicating if setup is finished with an error object when setup failed.
+ *
+ */
+- (void)setupAsyncWithLicenseKey:(NSString * _Nonnull)licenseKey
+                        delegate:(id<AnylineOCRModuleDelegate> _Nonnull)delegate
+                       ocrConfig:(ALOCRConfig * _Nonnull)ocrConfig
+                        finished:(void (^_Nonnull)(BOOL success, NSError * _Nullable error))finished;
+
 /**
  *  Sets a new ALOCRConfig and returns an Error if something failed.
  *
@@ -84,7 +103,7 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)setOCRConfig:(ALOCRConfig *)ocrConfig error:(NSError **)error;
+- (BOOL)setOCRConfig:(ALOCRConfig * _Nonnull)ocrConfig error:(NSError * _Nullable * _Nullable)error;
 /**
  *  Use this method to copy a custom trained font data into the Anyline work environment.
  *  This method is mandatory if you want to use custom fonts.
@@ -95,14 +114,15 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @return Boolean indicating the success / failure of the call.
  */
-- (BOOL)copyTrainedData:(NSString *)trainedDataPath
-               fileHash:(NSString *)hash
-                  error:(NSError **)error;
+- (BOOL)copyTrainedData:(NSString * _Nonnull)trainedDataPath
+               fileHash:(NSString * _Nonnull)hash
+                  error:(NSError * _Nullable * _Nullable)error;
 
 @end
 /**
  *  The delegate for the AnylineOCRModuleView.
  */
+__attribute__((deprecated("As of release 10.1, use an ALOCRScanDelegate, combined with an ALOCRScanPlugin instead. This class will be removed by November 2019.")))
 @protocol AnylineOCRModuleDelegate <NSObject>
 
 @required
@@ -113,8 +133,8 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *  @param anylineOCRModuleView The AnylineOCRModuleView
  *  @param result               The result object
  */
-- (void)anylineOCRModuleView:(AnylineOCRModuleView *)anylineOCRModuleView
-               didFindResult:(ALOCRResult *)result;
+- (void)anylineOCRModuleView:(AnylineOCRModuleView * _Nonnull)anylineOCRModuleView
+               didFindResult:(ALOCRResult * _Nonnull)result;
 
 @optional
 /**
@@ -134,9 +154,9 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @deprecated since 3.10
  */
-- (void)anylineOCRModuleView:(AnylineOCRModuleView *)anylineOCRModuleView
-             reportsVariable:(NSString *)variableName
-                       value:(id)value __deprecated_msg("Deprecated since 3.10 Use AnylineDebugDelegate instead.");
+- (void)anylineOCRModuleView:(AnylineOCRModuleView * _Nonnull)anylineOCRModuleView
+             reportsVariable:(NSString * _Nonnull)variableName
+                       value:(id _Nonnull)value __deprecated_msg("Deprecated since 3.10 Use AnylineDebugDelegate instead.");
 /**
  *  Is called when the processing is aborted for the current image before reaching return.
  *  (If not text is found or confidence is to low, etc.)
@@ -146,7 +166,7 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @deprecated since 3.10
  */
-- (void)anylineOCRModuleView:(AnylineOCRModuleView *)anylineOCRModuleView
+- (void)anylineOCRModuleView:(AnylineOCRModuleView * _Nonnull)anylineOCRModuleView
            reportsRunFailure:(ALOCRError)error __deprecated_msg("Deprecated since 3.10 Use AnylineDebugDelegate instead.");
 /**
  *  Called when the outline of a possible text is detected. (currently always a rect with 4 points,
@@ -162,7 +182,7 @@ typedef NS_ENUM(NSInteger, ALOCRError) {
  *
  *  @deprecated since 3.10
  */
-- (BOOL)anylineOCRModuleView:(AnylineOCRModuleView *)anylineOCRModuleView
-         textOutlineDetected:(ALSquare *)outline __deprecated_msg("Deprecated since 3.10 Use AnylineDebugDelegate instead.");
+- (BOOL)anylineOCRModuleView:(AnylineOCRModuleView * _Nonnull)anylineOCRModuleView
+         textOutlineDetected:(ALSquare * _Nonnull)outline __deprecated_msg("Deprecated since 3.10 Use AnylineDebugDelegate instead.");
 
 @end

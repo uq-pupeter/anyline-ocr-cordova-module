@@ -3,10 +3,11 @@
 //  Anyline
 //
 //  Created by Daniel Albertini on 21/03/2017.
-//  Copyright © 2017 9Yards GmbH. All rights reserved.
+//  Copyright © 2019 Anyline GmbH. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#import "ALBaseOCRConfig.h"
 
 /*
  *  Predefined Regex examples as NSString
@@ -57,7 +58,7 @@ CG_INLINE ALRange ALRangeMake(NSUInteger min, NSUInteger max) {
 }
 
 /**
- *  The possible scanModes for the AnylineOCR module
+ *  The possible scanModes for the AnylineOCR plugin
  */
 typedef NS_ENUM(NSInteger, ALOCRScanMode) {
     /**
@@ -72,18 +73,35 @@ typedef NS_ENUM(NSInteger, ALOCRScanMode) {
     /**
      * The AUTO mode is optimal if you want to scan more than one use case in one mode. This mode automatically
      * tries to identify the to be scanned text within the cutout, and adjust the parameters accordingly.
-     * @see <a href="https://documentation.anyline.io/toc/modules/anyline_ocr/index.html#scanmode-auto">Anyline OCR Auto Mode - Anyline Documentation</a>
+     * @see <a href="https://documentation.anyline.com/toc/modules/anyline_ocr/index.html#scanmode-auto">Anyline OCR Auto Mode - Anyline Documentation</a>
      */
     ALAuto
 };
 
+@interface ALOCRLanguage : NSObject
+
+@property (nullable, nonatomic, strong) NSString *path;
+@property (nullable, nonatomic, strong) NSString *md5;
+
+@property (nullable, nonatomic, strong) NSString *filename;
+@property (nullable, nonatomic, strong) NSString *fileExtension;
+
+- (instancetype _Nullable)initWithPath:(NSString * _Nonnull)path error:(NSError * _Nullable * _Nullable)error;
+
++ (BOOL)copyLanguage:(NSString * _Nonnull)path
+              toPath:(NSString * _Nonnull)toPath
+            fileHash:(NSString * _Nullable)hash
+               error:(NSError * _Nullable * _Nullable)error;
+
+@end
+
 /**
- *  A class used to configure the Anyline OCR module.
+ *  A class used to configure the Anyline OCR scan plugin.
  */
-@interface ALOCRConfig : NSObject
+@interface ALOCRConfig : ALBaseOCRConfig
 
-- (instancetype _Nullable)initWithJsonDictionary:(NSDictionary * _Nonnull)configDict;
-
+- (instancetype _Nullable)initWithJsonDictionary:(NSDictionary * _Nonnull)configDict
+                                           error:(NSError * _Nullable * _Nullable)error;
 /**
  *  The scan mode.
  *  @see ALOCRScanMode
@@ -106,7 +124,19 @@ typedef NS_ENUM(NSInteger, ALOCRScanMode) {
 /**
  *  Property to set the tesseract tessdata files as Array of Strings. ex. @[@"eng",@"deu"]
  */
-@property (nullable, nonatomic, strong) NSArray<NSString *> *tesseractLanguages;
+@property (nullable, nonatomic, strong) NSArray<NSString *> *tesseractLanguages __deprecated_msg("Deprecated since 3.20. Use languages instead! This method still requires a copy of the traineddata.");
+
+/**
+ *  Property to set the any files as Array of String paths to the files.
+ *
+ *  Note this method requires the full path with fileending and not only the file name like the old deprecated method.
+ */
+@property (nullable, nonatomic, copy, readonly) NSArray<NSString *> *languages;
+
+- (void)setLanguages:(NSArray<NSString *> * _Nonnull)languages __deprecated_msg("Deprecated since 4. Use languages - (BOOL)setLanguages:(NSArray<NSString *> *)languages error:(NSError *)error");
+
+- (BOOL)setLanguages:(NSArray<NSString *> * _Nonnull)languages error:(NSError * _Nullable * _Nullable)error;
+
 /**
  *  Property for the character whitelist you would like to use.
  */
@@ -193,5 +223,7 @@ typedef NS_ENUM(NSInteger, ALOCRScanMode) {
 - (NSDictionary * _Nullable)startVariablesOrError:(NSError * _Nullable * _Nullable)error;
 
 - (NSString * _Nullable)toJsonString;
+
+- (BOOL)allLanguagesAnyFiles;
 
 @end

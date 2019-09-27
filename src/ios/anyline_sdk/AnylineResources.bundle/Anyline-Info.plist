@@ -2,13 +2,32 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.anyline.sdk</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Anyline</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.13.0</string>
+	<string>14</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>iPhoneOS</string>
+	</array>
 	<key>CFBundleVersion</key>
-	<string>1328</string>
+	<string>1423</string>
 	<key>GITHash</key>
-	<string>36d4ef61aeae9252b2e697780364769a049fd58f</string>
+	<string>b4aebe5668f5acff19a62ad8f321f09d1aa47a34</string>
+	<key>MinimumOSVersion</key>
+	<string>8.0</string>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+		<integer>2</integer>
+		<integer>3</integer>
+		<integer>4</integer>
+	</array>
 </dict>
 </plist>
